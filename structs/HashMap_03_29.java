@@ -34,6 +34,132 @@ public class HashMap_03_29<K,V> {
             this.val = val;
         }
 
+        /**
+         * Gets the key of the pair
+         * @return The key of the pair
+         */
+        public K getKey() {
+            return key;
+        }
+
+        /**
+         * Gets the value of the pair
+         * @return The value of the pair
+         */
+        public V getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the key
+         * @param k Sets to this key
+         */
+        public void setKey(K k) {
+            key=k;
+        }
+
+        /**
+         * Sets the value
+         * @param v Sets to this value
+         */
+        public void setVal(V v) {
+            val=v;
+        }
+
+    }
+
+    /**
+     * Class HMIterator
+     * @author Kevin Zhang
+     */
+    public static class HMIterator<K, V>implements Iterator<KVPair<K, V>> {
+
+        /**
+         * The iterator for the arraylist
+         */
+        private Iterator<LinkedList<KVPair<K, V>>>arrayListIterator;
+
+        /**
+         * The iterator for the linkedlist
+         */
+        private Iterator<KVPair<K, V>>linkedListIterator;
+
+        /**
+         * Current element count
+         */
+        private int cnt;
+
+        /**
+         * Maximum element count
+         */
+        private final int max;
+
+        /**
+         * Constructor for the iterator.
+         * The constructor is private so that only the parent class can make instances.
+         *
+         * @param ali The array list iterator for the map's buckets
+         * @param max The number of elements in the map
+         */
+        private HMIterator(Iterator<LinkedList<KVPair<K, V>>>ali,int max) {
+
+            this.arrayListIterator=ali;
+            this.max=max;
+            //gets the next valid linked list
+            while(ali.hasNext()) {
+
+                linkedListIterator=ali.next().iterator();
+
+                if(linkedListIterator.hasNext())
+                    break;
+
+            }
+
+        }
+
+        /**
+         * Returns {@code true} if the iteration has more elements.
+         * (In other words, returns {@code true} if {@link #next} would
+         * return an element rather than throwing an exception.)
+         *
+         * @return {@code true} if the iteration has more elements
+         */
+        @Override
+        public boolean hasNext() {
+            return cnt < max;
+        }
+
+        /**
+         * Returns the next element in the iteration.
+         *
+         * @return the next element in the iteration
+         * @throws NoSuchElementException if the iteration has no more elements
+         */
+        @Override
+        public KVPair<K, V> next() {
+            //throw an exception if there's no more elements
+            if(cnt==max)
+                throw new NoSuchElementException("Iterator reached the end.");
+            KVPair<K, V>n=linkedListIterator.next();//get the next element
+            //make sure we can get the next element
+            if(!linkedListIterator.hasNext()) {
+                //finds the next available element
+                while(arrayListIterator.hasNext()) {
+
+                    linkedListIterator=arrayListIterator.next().iterator();
+
+                    if(linkedListIterator.hasNext())
+                        break;
+
+                }
+
+            }
+
+            cnt++;
+            return n;
+
+        }
+
     }
 
     /**
@@ -107,6 +233,14 @@ public class HashMap_03_29<K,V> {
         this.load = DEFAULT_LOAD_FACTOR;
         this.maxsize = (int) (this.load * this.stuff.size());
 
+    }
+
+    /**
+     * Gets an iterator
+     * @return An iterator that can iterate through the map
+     */
+    public Iterator<KVPair<K, V>>iterator() {
+        return new HMIterator<>(stuff.iterator(),size());
     }
 
     /**
@@ -228,6 +362,29 @@ public class HashMap_03_29<K,V> {
             }
 
         }
+
+    }
+
+    /**
+     * Get a value
+     * @param key The key to look for
+     * @return The value associated
+     */
+    public V get(K key) {
+
+        LinkedList<KVPair<K, V>>list=stuff.get(hashCode(key));
+        Iterator<KVPair<K, V>>it = list.iterator();
+        KVPair<K, V>tmp;
+
+        while(it.hasNext()) {
+
+            tmp=it.next();
+            if(tmp.key.equals(key))
+                return tmp.val;
+
+        }
+
+        return null;
 
     }
 
